@@ -155,7 +155,7 @@ impl Filesystem for Native {
             if entries.len() != 1 {
                 return Err("That exact Recycle Bin entry is unavailable. It may have been emptied or restored elsewhere.".into());
             }
-            trash::os_limited::restore_all(entries).map_err(err)
+            recycle::restore_exact(&entries[0].id, &entries[0].original_path())
         }
         #[cfg(not(windows))]
         {
@@ -963,6 +963,25 @@ mod tests {
         e.undo().unwrap();
         assert_eq!(fs::read(occupied).unwrap(), b"already kept");
         assert_eq!(fs::read(source).unwrap(), b"native engine fixture");
+    }
+
+    #[cfg(windows)]
+    #[test]
+    fn windows_restore_collision_preserves_both_files() {
+        let dir = tempfile::tempdir().unwrap();
+        let root = fs::canonicalize(dir.path()).unwrap();
+        let p = root.join("collision-fixture.txt");
+        fs::write(&p, b"recycled original").unwrap();
+        Native.recycle(&p).unwrap();
+        let item = Native.recycled().unwrap().into_iter().find(|x| same_path(&x.original, &p)).unwrap();
+        // Exercise the Shell's collision policy directly, past Engine's preflight.
+        fs::write(&p, b"concurrent arrival").unwrap();
+        Native.restore(&item.id).unwrap();
+        assert_eq!(fs::read(&p).unwrap(), b"concurrent arrival");
+        let restored = fs::read_dir(&root).unwrap().filter_map(|x| x.ok()).any(|x| {
+            x.path() != p && fs::read(x.path()).ok().as_deref() == Some(b"recycled original".as_slice())
+        });
+        assert!(restored, "Restore must rename the old file rather than overwrite the new one");
     }
 
 }
