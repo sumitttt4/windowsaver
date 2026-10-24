@@ -1,0 +1,15 @@
+node_modules/
+dist/
+src-tauri/target/
+reports/
+*.local
+spike-core/target/
+
+core/target/
+src-tauri/gen/
+landing/node_modules/
+landing/.next/
+landing/out/
+*.sqlite3*
+
+*.tsbuildinfo
