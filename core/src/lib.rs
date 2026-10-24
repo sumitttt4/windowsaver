@@ -130,14 +130,11 @@ impl Filesystem for Native {
     fn recycled(&self) -> Result<Vec<Recycled>> {
         #[cfg(windows)]
         {
-            Ok(trash::os_limited::list()
-                .map_err(err)?
-                .into_iter()
-                .map(|x| Recycled {
-                    id: x.id.to_string_lossy().into(),
-                    original: x.original_path(),
-                })
-                .collect())
+            trash::os_limited::list().map_err(err)?.into_iter().map(|x| {
+                // Shell display names hide known extensions. Never use them as identity.
+                let name = recycle::original_name(&x.id)?;
+                Ok(Recycled { id: x.id.to_string_lossy().into(), original: x.original_parent.join(name) })
+            }).collect()
         }
         #[cfg(not(windows))]
         {
@@ -147,15 +144,11 @@ impl Filesystem for Native {
     fn restore(&self, id: &str) -> Result<()> {
         #[cfg(windows)]
         {
-            let entries: Vec<_> = trash::os_limited::list()
-                .map_err(err)?
-                .into_iter()
-                .filter(|x| x.id.to_string_lossy() == id)
-                .collect();
+            let entries: Vec<_> = self.recycled()?.into_iter().filter(|x| x.id == id).collect();
             if entries.len() != 1 {
                 return Err("That exact Recycle Bin entry is unavailable. It may have been emptied or restored elsewhere.".into());
             }
-            recycle::restore_exact(&entries[0].id, &entries[0].original_path())
+            recycle::restore_exact(std::ffi::OsStr::new(&entries[0].id), &entries[0].original)
         }
         #[cfg(not(windows))]
         {
