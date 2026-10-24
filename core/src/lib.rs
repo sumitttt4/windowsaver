@@ -917,9 +917,9 @@ mod tests {
         fs::write(&p, b"fixture").unwrap();
         let before = Native.recycled().unwrap();
         Native.recycle(&p).unwrap();
-        let entries: Vec<_> = Native
-            .recycled()
-            .unwrap()
+        let all = Native.recycled().unwrap();
+        eprintln!("RECYCLE_DIAGNOSTIC source={p:?} exists={} entries={all:?}", p.exists());
+        let entries: Vec<_> = all
             .into_iter()
             .filter(|x| same_path(&x.original, &p) && !before.iter().any(|b| b.id == x.id))
             .collect();
@@ -973,6 +973,7 @@ mod tests {
         let p = root.join("collision-fixture.txt");
         fs::write(&p, b"recycled original").unwrap();
         Native.recycle(&p).unwrap();
+        eprintln!("COLLISION_DIAGNOSTIC source={p:?} exists={} entries={:?}", p.exists(), Native.recycled());
         let item = Native.recycled().unwrap().into_iter().find(|x| same_path(&x.original, &p)).unwrap();
         // Exercise the Shell's collision policy directly, past Engine's preflight.
         fs::write(&p, b"concurrent arrival").unwrap();
