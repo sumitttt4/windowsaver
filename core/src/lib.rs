@@ -911,10 +911,9 @@ mod tests {
     }
     #[cfg(windows)]
     #[test]
-    #[ignore = "Manual Windows-only Recycle Bin test; generated fixture only"]
     fn windows_recycle_round_trip() {
         let dir = tempfile::tempdir().unwrap();
-        let p = dir.path().join("feed-the-pile-generated-fixture.txt");
+        let p = fs::canonicalize(dir.path()).unwrap().join("feed-the-pile-generated-fixture.txt");
         fs::write(&p, b"fixture").unwrap();
         let before = Native.recycled().unwrap();
         Native.recycle(&p).unwrap();
@@ -928,4 +927,42 @@ mod tests {
         Native.restore(&entries[0].id).unwrap();
         assert_eq!(fs::read(p).unwrap(), b"fixture");
     }
+    #[cfg(windows)]
+    #[test]
+    fn windows_native_engine_bin_restart_undo_and_collision() {
+        let dir = tempfile::tempdir().unwrap();
+        for name in ["downloads", "screenshots", "keep"] {
+            fs::create_dir(dir.path().join(name)).unwrap();
+        }
+        let db = dir.path().join("journal.sqlite3");
+        let mut e = Engine::open(&db, Native).unwrap();
+        for name in ["downloads", "screenshots", "keep"] {
+            e.configure(name, &dir.path().join(name)).unwrap();
+        }
+        let source = e.config.downloads.as_ref().unwrap().join("native-fixture.txt");
+        fs::write(&source, b"native engine fixture").unwrap();
+        filetime::set_file_mtime(&source, filetime::FileTime::from_unix_time(now() as i64 - 10, 0)).unwrap();
+        let c = e.snapshot().unwrap().downloads.remove(0);
+        e.decide("downloads", &c.path, &c.id, "bin").unwrap();
+        assert!(!source.exists());
+        drop(e);
+        let mut e = Engine::open(&db, Native).unwrap();
+        // An arrival at the original name must never be overwritten by restore.
+        fs::write(&source, b"new arrival").unwrap();
+        assert!(e.undo().unwrap_err().contains("occupied"));
+        assert_eq!(fs::read(&source).unwrap(), b"new arrival");
+        fs::remove_file(&source).unwrap();
+        e.undo().unwrap();
+        assert_eq!(fs::read(&source).unwrap(), b"native engine fixture");
+        // Same-name Keep also uses the real Windows no-clobber move.
+        let occupied = e.config.keep.as_ref().unwrap().join("native-fixture.txt");
+        fs::write(&occupied, b"already kept").unwrap();
+        let c = e.snapshot().unwrap().downloads.remove(0);
+        let op = e.decide("downloads", &c.path, &c.id, "keep").unwrap();
+        assert!(op.destination.unwrap().ends_with("native-fixture (1).txt"));
+        e.undo().unwrap();
+        assert_eq!(fs::read(occupied).unwrap(), b"already kept");
+        assert_eq!(fs::read(source).unwrap(), b"native engine fixture");
+    }
+
 }

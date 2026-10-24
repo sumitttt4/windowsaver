@@ -82,7 +82,7 @@ function App() {
     let cleanup: (() => void) | undefined;
     listen<boolean>("pile-changed", () => {
       if (timer.current) clearTimeout(timer.current);
-      timer.current = setTimeout(() => void refresh(), 450);
+      timer.current = setTimeout(() => void refresh(), 3500);
     })
       .then((fn) => {
         if (disposed) fn();
