@@ -24,10 +24,10 @@
 
 - Windows runtime checks have not run. This Linux host cannot confirm the actual screenshot location, clipboard paste, Recycle Bin safety behavior, startup compatibility or thumbnail latency on the user's PC.
 - A Windows executable release build was attempted. It failed while archiving a Windows-target `tauri-utils` object with `memory map must have a non-zero length`. A targeted clean and single-job rebuild reproduced it. No working EXE or installer is claimed or attached.
-- The Windows GitHub workflow is included to build and upload an unsigned NSIS installer after source is pushed. It has not run yet.
+- The original Windows GitHub workflow passed on main (`6c9069c`), including native compilation and an unsigned NSIS installer. Follow-up installed-release acceptance and stronger native restore tests are being run in PR #2. Use the exact tested revision, not an older installer.
 - Mobile CSS and reduced-motion paths are implemented, but mobile-viewport and assistive-technology browser validation are not claimed.
 - The one-week personal trial, 3–5 friends' unprompted returns, public installer publication and Reddit posts have not happened. They require real usage and evidence.
-- Source PR is pending repository privacy. GitHub metadata still reports the requested repo as public; the browser's settings page is signed out. Closed-source code was not pushed publicly.
+- The owner explicitly authorized public publication. PR #1 was merged; follow-up safety and Windows acceptance changes are in PR #2. Public source is not an open-source license.
 
 ## Run next
 
@@ -35,4 +35,4 @@ Follow `RELEASE.md`, then the generated-file acceptance checklist in `FRIENDS_TR
 
 ## Landing design correction
 
-White canvas; Manrope headings; DM Sans body/navigation/buttons; light-blue controls; a local SVG icon component; real Moraine Lake photo with source in `landing/ASSETS.md`. Production build passes. Browser verified both font faces load, image loads, white background and pale-blue button values, desktop no horizontal overflow, and Later/Undo behavior. Phone/tablet screenshots were not verified. This revision remains local, as requested; the earlier hosted preview has not been updated.
+White canvas; Manrope headings; DM Sans body/navigation/buttons; light-blue controls; a local SVG icon component; real Moraine Lake photo with source in `landing/ASSETS.md`. Production build passes. Browser verified both font faces load, image loads, white background and pale-blue button values, desktop no horizontal overflow, and Later/Undo behavior. Phone/tablet screenshots were not verified. This revision is in the repository; the earlier hosted preview has not been updated.

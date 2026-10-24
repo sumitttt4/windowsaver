@@ -6,6 +6,6 @@ The white Next.js landing includes a clearly labeled sample-file demo, screensho
 
 Validation: desktop and landing production builds, nine Linux core tests, full Windows-target Tauri type check, Windows-target core test compilation, and browser checks of the landing sorting/undo/download flows.
 
-Limits: actual Windows runtime checks and the seven-day trial remain pending. Cross-host executable build failed in a compiler dependency archive, so no EXE/installer is represented as working. Read `docs/VERIFICATION.md` and start with disposable folders. Repository must be private before pushing this proprietary source.
+Limits: actual Windows runtime checks and the seven-day trial remain pending. The native Windows baseline installer build passed; installed-app acceptance is tracked in PR #2. Read `docs/VERIFICATION.md` and start with disposable folders. The owner authorized public source publication; no open-source license is granted.
 
-Landing design correction: Manrope for headings, DM Sans for body/buttons, pale-blue controls, one consistent SVG icon set, and a real locally bundled Moraine Lake photo. Desktop visual check confirms fonts, photo, pure-white canvas and no horizontal overflow. No GitHub push or deployment was performed for this correction.
+Landing design correction: Manrope for headings, DM Sans for body/buttons, pale-blue controls, one consistent SVG icon set, and a real locally bundled Moraine Lake photo. Desktop visual check confirms fonts, photo, pure-white canvas and no horizontal overflow. The correction was pushed in PR #1. The older hosted preview is unchanged.

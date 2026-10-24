@@ -40,8 +40,8 @@ The Next.js/Tailwind landing includes a sample-file sorting demo, both tabs, scr
 
 The source was prepared in a Linux environment. Windows runtime behavior, screenshots folder location and real friend retention must be tested; they are not fabricated as completed phases. No Reddit posts have been sent.
 
-## Closed source
+## Source and license
 
-The linked GitHub repository was public when checked. Do not push this proprietary source until it is private. No open-source license is granted. Third-party dependencies retain their own licenses; review their notices before binary distribution.
+The owner authorized public source publication. No open-source license is granted. Third-party dependencies retain their own licenses; review their notices before binary distribution.
 
 Copyright © 2026 Sumit Kumar Sharma. All rights reserved.
