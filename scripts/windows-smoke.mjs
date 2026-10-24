@@ -68,7 +68,11 @@ async function start() {
   await until(() => evaluate('!!document.querySelector(".file-card")'), 'App failed to render configured piles');
 }
 function invoke(command, args = {}) { return evaluate(`window.__TAURI_INTERNALS__.invoke(${JSON.stringify(command)}, ${JSON.stringify(args)})`); }
-function key(value) { return evaluate(`window.dispatchEvent(new KeyboardEvent('keydown', {key:${JSON.stringify(value)}}))`); }
+async function key(value) {
+  await evaluate(`(document.activeElement || window).dispatchEvent(new KeyboardEvent('keydown', {key:${JSON.stringify(value)}, bubbles:true}))`);
+  await delay(100);
+  await until(() => evaluate('document.querySelector(".desktop-shell")?.getAttribute("aria-busy") === "false"'), 'UI action did not finish');
+}
 async function preview(name) {
   const started = Date.now();
   await until(() => evaluate(`document.querySelector('.file-card h2')?.textContent === ${JSON.stringify(name)} && !!document.querySelector('.file-preview img')?.naturalWidth`), `Missing image/PDF preview: ${name}`);
@@ -82,6 +86,7 @@ try {
   await start();
   let s = await invoke('snapshot'); assert.equal(s.downloads.length, 3); assert.equal(s.warning, null);
   await preview('a-image.png');
+  await evaluate("document.querySelector('.decision-buttons .later').focus()");
   await key('l');
   await until(() => evaluate('document.querySelector(".file-card h2")?.textContent === "b-document.pdf"'), 'Later did not rotate');
   assert.equal((await invoke('snapshot')).downloads.length, 3);
@@ -106,6 +111,16 @@ try {
   // A genuine filesystem event must update the React card count automatically.
   await fixture('screenshots', 'watched.png', png);
   await until(() => evaluate("[...document.querySelectorAll('[role=tab]')].find(e => e.textContent.includes('Screenshots')).textContent.includes('2')"), 'Folder watcher did not refresh UI', 15000);
+  await key('b');
+  await until(async () => (await invoke('snapshot')).screenshots.length === 1, 'First screenshot Bin failed');
+  await until(() => evaluate('!!document.querySelector(".file-card")'), 'Next screenshot missing');
+  await key('b');
+  await until(() => evaluate('document.querySelector(".empty-pile h2")?.textContent === "Room to breathe."'), 'Empty pile did not celebrate');
+  await key('z');
+  await until(async () => (await invoke('snapshot')).screenshots.length === 1, 'Empty pile undo failed');
+  await until(() => evaluate('!document.querySelector(".decision-buttons button")?.disabled'), 'Undo still busy');
+  await key('z');
+  await until(async () => (await invoke('snapshot')).screenshots.length === 2, 'Second screenshot undo failed');
   const suggestions = await invoke('folder_suggestions'); assert.ok(suggestions.downloads);
   results.push({ check: 'installed app; image + PDF; keyboard Later/Keep/Bin; no overwrite; undo after restart; native clipboard; folder watching; known folders', passed: true });
   await fs.mkdir('reports', { recursive: true });

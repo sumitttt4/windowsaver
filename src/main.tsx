@@ -159,7 +159,10 @@ function App() {
         e.metaKey ||
         e.ctrlKey ||
         e.altKey ||
-        isShortcutTarget(e.target) ||
+        (isShortcutTarget(e.target) &&
+          (e.key === " " ||
+            !(e.target instanceof HTMLElement) ||
+            !["BUTTON", "A", "SUMMARY"].includes(e.target.tagName))) ||
         settings ||
         history
       )
@@ -210,7 +213,7 @@ function App() {
     ["review", "applying", "undoing"].includes(o.status),
   );
   return (
-    <div className="desktop-shell">
+    <div className="desktop-shell" aria-busy={busy || loading}>
       <header className="app-header">
         <a className="wordmark" href="#main">
           <span className="pile-mark">▤</span> feed the pile

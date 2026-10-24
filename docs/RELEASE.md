@@ -16,7 +16,7 @@ npm run tauri dev
 npm run tauri build
 ```
 
-Installer output: `src-tauri/target/release/bundle/nsis/`. The included GitHub workflow does the same checks and uploads an unsigned installer artifact; it has not run until the private repository receives the source. Signing and automatic updates are not configured. No public installer URL is invented.
+Installer output: `src-tauri/target/release/bundle/nsis/`. The included GitHub workflow does the same checks and uploads an unsigned installer artifact; the baseline workflow has passed and produced an installer. PR #2 adds installation and runtime acceptance; require those checks to pass on the revision you download. Signing and automatic updates are not configured. No public installer URL is invented.
 
 ## Build landing
 
@@ -31,7 +31,7 @@ Next.js + Tailwind, statically exported to `landing/out`. Before hosting elsewhe
 
 ## Storage and behavior
 
-Desktop folder config, queue ranks and write-ahead undo records live in `pile.sqlite3` under Tauri's per-user local app-data directory. SQLite uses WAL + FULL synchronous durability. Retain the database if you want persistent undo. The app never clears the system Recycle Bin. Keep uses Windows MoveFileEx without REPLACE_EXISTING, with COPY_ALLOWED + WRITE_THROUGH for cross-volume local disk moves. Ambiguous copies block further mutations and retain both sides for review. Bin requests explicit RECYCLEONDELETE, records the exact newly created Recycle Bin identity and rejects non-recycle pre-delete callbacks.
+Desktop folder config, queue ranks and write-ahead undo records live in `pile.sqlite3` under Tauri's per-user local app-data directory. SQLite uses WAL + FULL synchronous durability. Retain the database if you want persistent undo. The app never clears the system Recycle Bin. Keep uses Windows MoveFileEx without REPLACE_EXISTING, with COPY_ALLOWED + WRITE_THROUGH for cross-volume local disk moves. Ambiguous copies block further mutations and retain both sides for review. Bin requests explicit RECYCLEONDELETE, records the exact newly created Recycle Bin identity and rejects non-recycle pre-delete callbacks. Restore uses a guarded Shell move with RENAMEONCOLLISION, so a concurrent arrival is preserved; an unexpected restore path requires review.
 
 Image decoding is bounded to 40 MB input / 128 MB decoder allocation, with 720×520 previews. PDFs are capped at 30 MB, page one is rendered by a bundled PDF.js worker. Over-limit, corrupt, unsupported and password-protected files fall back to an icon with an explanation; Space opens the system viewer. No remote PDF renderer/CDN is used. Preview cache holds at most 16 thumbnails in memory.
 
