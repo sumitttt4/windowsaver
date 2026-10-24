@@ -1,0 +1,11 @@
+[package]
+name = "spike-core"
+version = "0.0.1"
+edition = "2021"
+license = "LicenseRef-Proprietary"
+[dependencies]
+notify = "8"
+tempfile = "3"
+[target.'cfg(windows)'.dependencies]
+trash = "=5.2.9"
+sha2 = "0.10"
