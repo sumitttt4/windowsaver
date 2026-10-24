@@ -205,13 +205,12 @@ pub fn restore_exact(id: &std::ffi::OsStr, original: &Path) -> std::result::Resu
 // Called immediately after trash::list initialized COM on the current worker.
 // System.FileName is the logical filename, including an Explorer-hidden extension.
 pub fn original_name(id: &std::ffi::OsStr) -> std::result::Result<String, String> {
-    use windows::{core::GUID, Win32::{Storage::EnhancedStorage::PROPERTYKEY, System::Com::CoTaskMemFree}};
+    use windows::Win32::{Storage::EnhancedStorage::PKEY_FileName, System::Com::CoTaskMemFree};
     let run = || -> Result<String> {
         unsafe {
             let wide: Vec<u16> = id.encode_wide().chain(Some(0)).collect();
             let item: IShellItem2 = SHCreateItemFromParsingName(PCWSTR(wide.as_ptr()), None)?;
-            let key = PROPERTYKEY { fmtid: GUID::from_u128(0x41cf5ae0_f75a_4806_bd87_59c7d9248eb9), pid: 100 };
-            let value = item.GetString(&key)?;
+            let value = item.GetString(&PKEY_FileName)?;
             let name = value.to_string();
             CoTaskMemFree(Some(value.0 as *const std::ffi::c_void));
             let name = name?;
